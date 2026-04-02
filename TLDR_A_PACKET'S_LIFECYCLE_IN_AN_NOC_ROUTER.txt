@@ -1,0 +1,9 @@
+                                tldr_basic_flow_of_a_data_packet
+
+ill tell the flow of a single datapacket.
+packet enters an input.
+is written into a fifo and then read in the next clock cycle(if that input port was a winner the previous clock cycle or if its a loser it has to wait)
+enters request compute and destination port is deduced
+request sent to request matrix
+switch allocator reads all requests from req matrix. if SA grants desired output, crossbar sends the datapacket to desired dest. the respective input port is declared a winner and the respective fifo is popped.
+if SA denies desired output, no output is allocated. the respective input port is declared a loser and the respective fifo is not popped and the packet must wait next clock cycle.

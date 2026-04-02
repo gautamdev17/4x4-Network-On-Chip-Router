@@ -1,0 +1,18 @@
+https://github.com/mohasnik/Network-On-Chip
+http://ethesis.nitrkl.ac.in/5708/1/e-79.pdf
+https://ijcsmc.com/docs/papers/June2017/V6I6201736.pdf
+https://www.irjet.net/archives/V3/i5/IRJET-V3I5494.pdf
+A 4x4 Network-on-Chip (NoC) router in Verilog is a hardware description language (HDL) implementation of a router designed to connect processing elements in a 4x4 mesh topology. This type of router is a fundamental component of an NoC, enabling efficient communication between various intellectual property (IP) blocks on a System-on-Chip (SoC).
+Key Components and Functionality:
+Ports: A typical 4x4 mesh NoC router has five ports: North, South, East, West, and Local (for connecting to the local processing element).
+Input and Output Buffers: Buffers (often FIFOs) are used to temporarily store incoming and outgoing data packets, managing flow control and preventing data loss during congestion.
+Routing Logic: This module determines the next hop for an incoming packet based on its destination address and the chosen routing algorithm (e.g., XY routing, source routing).
+Switch Allocator: Arbitrates access to the router's internal crossbar switch, ensuring that multiple incoming packets can be routed to their respective output ports without conflicts.
+Crossbar Switch: A configurable switch that connects input ports to output ports, allowing data packets to be forwarded to their correct destinations.
+Control Logic (FSM): A Finite State Machine (FSM) controls the overall operation of the router, managing the flow of data through the buffers, routing logic, and switch allocator.
+Verilog Implementation Considerations:
+Modularity: Breaking down the router into smaller, manageable modules (e.g., buffer, routing unit, switch allocator, crossbar) makes the design more organized and easier to debug.
+Packet Format: Defining a clear packet format, including header information (destination address, packet type) and payload, is crucial for proper routing.
+Routing Algorithm: Implementing the chosen routing algorithm within the Verilog code, ensuring deadlock-free operation.
+Flow Control: Incorporating mechanisms for flow control (e.g., handshaking signals, backpressure) to prevent buffer overflows and ensure reliable data transfer.
+Testbench: Developing a comprehensive testbench to simulate the router's behavior under various traffic patterns and verify its functionality.
