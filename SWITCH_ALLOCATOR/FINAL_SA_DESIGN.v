@@ -12,42 +12,51 @@ send grants as 3bit binary encoded values since it saves up space and send as se
 `timescale 1ns/1ps
 
 module switch_allocator(
-  input logic reqMat [4:0][4:0],
-  input  logic clk,
-  input  logic rst,
-  output logic [2:0] selsignal [4:0], //select winners for each direction
-  output logic [4:0] fifo_pop //winner inputs are popped
+  input [24:0]reqMat,//input i requests output j
+  input clk,
+  input  rst,
+  output reg [24:0] grant //input i wins output j
 );
-  logic [2:0] rrbptr [4:0];
-  integer i,j,k;
-  logic f;
+  reg [2:0] rrbptr [4:0];
+  reg has_winner [0:4];
+  reg [2:0] winner [0:4];
+  reg [2:0] next_ptr [0:4];
+  reg [2:0] candidate;
+  integer j, step;
 
-  always_ff @(posedge clk) begin
-    if (rst) begin // reset all
-      for (i=0; i<5; i=i+1) begin
-        rrbptr[i]<=3'b0;
-        selsignal[i]<=3'b111;//no winner in that direction(output)
+  always @* begin // combinational: find winner for each output port this cycle
+    for (j = 0; j < 5; j = j+1) begin
+      has_winner[j] = 1'b0;
+      winner[j]     = 3'd0;
+      next_ptr[j]   = rrbptr[j]; // default: pointer unchanged if no requests
+
+      for (step = 0; step < 5; step = step+1) begin
+        // walk from rrbptr[j], wrapping 4→0
+        candidate = (rrbptr[j] + step[2:0] >= 5) ?
+                    (rrbptr[j] + step[2:0] - 3'd5) :
+                    (rrbptr[j] + step[2:0]);
+        // only record the FIRST hit (has_winner gates subsequent steps)
+        if (!has_winner[j] && reqMat[candidate*5 + j]) begin
+          has_winner[j] = 1'b1;
+          winner[j]     = candidate;
+          // advance pointer to one past winner so next cycle starts there
+          next_ptr[j]   = (candidate == 3'd4) ? 3'd0 : candidate + 3'd1;
+        end
       end
-      fifo_pop <= 5'b0;
+    end
+  end
+
+  always@(posedge clk) begin // register results
+    if(rst) begin
+      grant <= 25'b0;
+      rrbptr[0]<=3'b0; rrbptr[1]<=3'b0; rrbptr[2]<=3'b0;
+      rrbptr[3]<=3'b0; rrbptr[4]<=3'b0;
     end else begin
-      //initialize everythign again for nxt clock
-      for (i=0; i<5; i=i+1) begin
-        selsignal[i] <= 3'b111;//default->no winner
-      end
-      fifo_pop <= 5'b0;
-
-      for (i=0; i<5; i=i+1) begin// go into each direction(outputport) // take each column each time
-        f = 1'b0;
-        k = 0;
-        // run from rrb to a full circle
-        for (j = int'(rrbptr[i]); k < 5; j = (j==4) ? 0 : j+1) begin // go into that column, pick the rows
-          k = k + 1;
-          if (reqMat[j][i] == 1'b1 && !f) begin
-            selsignal[i] <= logic'(j);//winner for output i
-            rrbptr[i] <= (j == 4) ? 3'b0 : j+1;
-            fifo_pop[j] <= 1'b1;//pop the winner input port.the losers have to wait next clk cyckle and they dont get a chance to be popped now
-            f = 1'b1; // break, stop running into that port and go to next
-          end
+      grant <= 25'b0; // clear all grants; re-arbitrate every cycle
+      for (j = 0; j < 5; j = j+1) begin
+        if (has_winner[j]) begin
+          grant[winner[j]*5 + j] <= 1'b1; // one grant bit per output port max
+          rrbptr[j] <= next_ptr[j];        // advance pointer past this winner
         end
       end
     end

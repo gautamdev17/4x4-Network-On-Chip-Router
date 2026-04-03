@@ -1,5 +1,5 @@
 //building route compute after fifo
-// data_out of fifo--->rc unit for that fifo--->send one hot encoded dest address to req matrix
+// head flit(peek_data) of fifo--->rc unit for that fifo--->send one hot encoded dest address to req matrix
 `timescale 1ns/1ps
 module rc #(parameter DATA_WIDTH = 32) (input [DATA_WIDTH-1:0] head_flit,input [1:0] curr_x,curr_y,output reg [4:0] out_dir);
   //curr_x,curr_y ---> router x and y coordinates

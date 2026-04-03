@@ -2,7 +2,7 @@
 `timescale 1ns/1ps
 //sync fifo
 module fifo #(parameter DATA_WIDTH=32,parameter DEPTH=8)
-  (input clk,rst,rd_en,wr_en,input [DATA_WIDTH-1:0] data_in,output full,empty,data_valid,output reg [DATA_WIDTH-1:0] data_out);
+  (input clk,rst,rd_en,wr_en,input [DATA_WIDTH-1:0] data_in,output full,empty,data_valid,output reg [DATA_WIDTH-1:0] data_out,output [DATA_WIDTH-1:0] peek_data);
   localparam ADDR_WIDTH = (DEPTH>1)?$clog2(DEPTH):1; //address width
   reg [ADDR_WIDTH-1:0]wr_ptr,rd_ptr; // for pointers // extra bit for checking full condition
   reg [DATA_WIDTH-1:0] mem [DEPTH-1:0]; // write the basic block first * no. of blocks
@@ -15,6 +15,7 @@ So each mem[i] is one full DATA_WIDTH-bit flit.*/
   assign empty = (count==0);
   assign full = (count==DEPTH);
   assign data_valid = ~empty;
+  assign peek_data = mem[rd_ptr];// continously expose the head flit(top of the queue) even without reading/read_en fired
   /*
   this logic works, but it takes in capacity = depth-1 so one mem space is wasted. count logic avoids this.
   assign empty = (rd_ptr == wr_ptr);
