@@ -9,7 +9,7 @@ module crossbar #(parameter DATA_WIDTH=32)
   assign flit[3]=flit3; assign flit[4]=flit4;
   integer k;
 
-  always @* begin // bro basically this is multiplexer, we are giving inputs to respective output lines
+  always @* begin // basically this is multiplexer, we are giving inputs to respective output lines
     out_N = {DATA_WIDTH{1'b0}};
     out_S = {DATA_WIDTH{1'b0}};
     out_E = {DATA_WIDTH{1'b0}};
